@@ -3,12 +3,13 @@ import millify from 'millify';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { cryptoApi, useGetCryptosQuery } from '../services/cryptoApi';
+import { Cryptocurrencies, News } from '../Components';
+import { useGetCryptosQuery } from '../services/cryptoApi';
 
 const {Title } = Typography; // Can use this and type <Title> instead of <Typography.Title>
 
 const Homepage = () => {
-    const {data, isFetching} = useGetCryptosQuery('');
+    const {data, isFetching} = useGetCryptosQuery(10);
     const globalStats = data?.data?.stats;
 
     if(isFetching) return(<div> Loading ... </div>)
@@ -24,6 +25,16 @@ const Homepage = () => {
             <Col span={12}><Statistic title="Total 24h Volume" value={millify(globalStats.total24hVolume)}/></Col>
             <Col span={12}><Statistic title="Total Markets" value={millify(globalStats.totalMarkets)}/></Col>
         </Row>
+        <div className='home-heading-container'>
+            <Title level={2} className='home-title'>Top 10 Cryptocurrencies</Title>
+            <Title level={2} className='show-more'><Link to='/cryptocurrencies'>Show More</Link></Title>
+        </div>
+        <Cryptocurrencies simplified/>
+        <div className='home-heading-container'>
+            <Title level={2} className='home-title'>Lastest Crypto News</Title>
+            <Title level={2} className='show-more'><Link to='/news'>Show More</Link></Title>
+        </div>
+        <News />
         </>
     )
 }
