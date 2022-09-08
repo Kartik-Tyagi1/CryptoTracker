@@ -5,7 +5,8 @@ import millify from 'millify';
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { useGetCryptoDetailsQuery } from '../services/cryptoApi';
+import { useGetCryptoDetailsQuery, useGetCryptoHistoryQuery } from '../services/cryptoApi';
+import LineChart from './LineChart';
 
 type CryptoDetailsParams = {
   coinId : any
@@ -18,19 +19,21 @@ const {Option} = Select;
 const CryptoDetails = () : JSX.Element => {
   const {coinId} = useParams<CryptoDetailsParams>();
   const [timePeriod, setTimePeriod] = useState('7d');
-  const {data, isFetching} = useGetCryptoDetailsQuery(coinId);
+  const {data, isFetching : FetchingDetails} = useGetCryptoDetailsQuery(coinId);
+  const {data: coinHistory, isFetching: FetchingHistory} = useGetCryptoHistoryQuery({coinId, timePeriod});
+
   const cryptoDetails = data?.data?.coin;
 
-  console.log(cryptoDetails)
+  if(FetchingDetails) return(<div> Loading ... </div>);
+  if(FetchingHistory) return(<div> Loading ... </div>);
 
-  if(isFetching) return(<div> Loading ... </div>)
+  const time = ['3h', '24h', '7d', '30d', '3m', '1y', '3y', '5y'];
 
-  const time = ['3 Hour', '24 Hour', '7 Days', '30 Days', '1 Month', '3 Months', '3 Years', '5 Years'];
 
   const stats = [
     { title: 'Price to USD', value: `$ ${cryptoDetails.price && millify(cryptoDetails.price)}`, icon: <DollarCircleOutlined /> },
     { title: 'Rank', value: cryptoDetails.rank, icon: <NumberOutlined /> },
-    { title: '24h Volume', value: `$ ${cryptoDetails.volume && millify(cryptoDetails.volume)}`, icon: <ThunderboltOutlined /> },
+    //{ title: '24h Volume', value: `$ ${cryptoDetails.24hVolume && millify(cryptoDetails.24hVolume)}`, icon: <ThunderboltOutlined /> },
     { title: 'Market Cap', value: `$ ${cryptoDetails.marketCap && millify(cryptoDetails.marketCap)}`, icon: <DollarCircleOutlined /> },
     { title: 'All-time-high(daily avg.)', value: `$ ${millify(cryptoDetails.allTimeHigh.price)}`, icon: <TrophyOutlined /> },
   ];
@@ -61,7 +64,8 @@ const CryptoDetails = () : JSX.Element => {
         onChange={(value) => setTimePeriod(value)}>
           {time.map((date : string) => <Option key={date}>{date}</Option>)}
       </Select>
-      {/* Line Chart */}
+      {/* The timeperiod does not work becuase the API now requires you to pay to get more than 24hr data */}
+      <LineChart coinHistory={coinHistory} currentPrice={millify(cryptoDetails.price)} coinName={cryptoDetails.name}/>
       <Col className='stats-container'>
         <Col className='coin-value-statistics'>
           <Col className='coin-value-statistics-heading'>
